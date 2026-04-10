@@ -6,6 +6,7 @@ ROOT_URLCONF = "tests.urls"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
+    "django_rspack",
     "react_on_django",
 ]
 MIDDLEWARE = []

@@ -4,6 +4,8 @@ from react_on_django.conf import reload_react_on_django_settings
 from react_on_django.utils.json_output import (
     ReactOnDjangoJSONEncoder,
     escape_json_string,
+    json_safe_and_pretty,
+    sanitized_props_string,
     serialize_json,
 )
 
@@ -41,3 +43,17 @@ def test_serialize_json_uses_custom_serialization_hook(settings):
     reload_react_on_django_settings()
 
     assert serialize_json({"example": Example("Ada")}) == '{"example":{"value":"Ada"}}'
+
+
+def test_sanitized_props_string_accepts_hashes_and_json_strings():
+    assert sanitized_props_string({"name": "Ada"}) == '{"name":"Ada"}'
+    assert (
+        sanitized_props_string('{"name":"Ada","x":"</script>"}')
+        == '{"name":"Ada","x":"\\u003c/script\\u003e"}'
+    )
+
+
+def test_json_safe_and_pretty_handles_none_string_and_mapping():
+    assert json_safe_and_pretty(None) == "{}"
+    assert json_safe_and_pretty({"name": "Ada"}) == '{"name":"Ada"}'
+    assert json_safe_and_pretty('{"name":"</script>"}') == '{"name":"\\u003c/script\\u003e"}'

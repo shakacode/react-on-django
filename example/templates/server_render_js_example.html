@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load react %}
+
+{% block title %}server_render_js | React on Django Example{% endblock %}
+
+{% block content %}
+  <article class="demo-card">
+    <h2>Non-React JavaScript on the server</h2>
+    <p>
+      This page executes a registered JavaScript object directly on the Node
+      renderer, without hydrating any client component.
+    </p>
+
+    <h3>Template</h3>
+    <pre>{% templatetag openblock %} react_server_render_js "ReactOnRails.getComponent('HelloString').component.world()" {% templatetag closeblock %}</pre>
+
+    <hr>
+    <div class="server-render-js-output">
+      {% react_server_render_js "ReactOnRails.getComponent('HelloString').component.world()" %}
+    </div>
+  </article>
+{% endblock %}

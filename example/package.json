@@ -1,0 +1,35 @@
+{
+  "name": "react-on-django-example",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build_example.mjs development",
+    "build:dev": "node scripts/build_example.mjs development",
+    "build:test": "node scripts/build_example.mjs test",
+    "build:prod": "node scripts/build_example.mjs production",
+    "build:client:watch": "HMR=false npx webpack --config config/webpack/client.config.js --watch",
+    "build:server:watch": "npx webpack --config config/webpack/server.config.js --watch",
+    "build:rsc:watch": "npx webpack --config config/webpack/rsc.config.js --watch",
+    "dev:client": "HMR=true npx webpack serve --config config/webpack/client.config.js",
+    "test:e2e": "playwright test -c playwright.config.ts"
+  },
+  "dependencies": {
+    "react": "19.0.3",
+    "react-dom": "19.0.3",
+    "react-on-rails-pro": "16.5.1",
+    "react-on-rails-pro-node-renderer": "16.5.1",
+    "react-on-rails-rsc": "19.0.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.27.1",
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-react": "^7.27.1",
+    "@playwright/test": "^1.56.1",
+    "babel-loader": "^10.0.0",
+    "css-loader": "^7.1.2",
+    "mini-css-extract-plugin": "^2.9.2",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.2"
+  }
+}

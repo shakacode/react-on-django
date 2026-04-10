@@ -11,4 +11,12 @@ __pycache__/
 build/
 dist/
 htmlcov/
-
+.playwright-cli/
+example/db.sqlite3
+example/node_modules/
+example/public/packs/
+example/public/packs-test/
+example/playwright-report/
+example/test-results/
+example/tmp/
+output/

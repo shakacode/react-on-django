@@ -25,6 +25,8 @@ class ClientRenderer(BaseRenderer):
             dom_id=options.dom_id,
             props_json=options.props_json,
             trace=options.trace,
+            store_dependencies=options.store_dependencies,
+            immediate_hydration=options.immediate_hydration,
         )
         context_script = (
             render_context_script(options.page_context) if include_context_script else ""

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from typing import Any
 
 from django.core.serializers.json import DjangoJSONEncoder
 
 from ..conf import get_react_on_django_settings
+from ..errors import ReactOnDjangoError
 
 JSON_ESCAPE_TABLE = str.maketrans(
     {
@@ -49,3 +51,19 @@ def serialize_json(value: Any, *, encoder: type[DjangoJSONEncoder] | None = None
     encoder_class = encoder or get_react_on_django_settings().json_encoder
     raw_json = json.dumps(value, cls=encoder_class, separators=(",", ":"))
     return escape_json_string(raw_json)
+
+
+def sanitized_props_string(props: Any) -> str:
+    return serialize_json(props)
+
+
+def json_safe_and_pretty(value: str | Mapping[str, Any] | None) -> str:
+    if value is None:
+        return "{}"
+    if isinstance(value, str):
+        return escape_json_string(value)
+    if isinstance(value, Mapping):
+        return serialize_json(dict(value))
+    raise ReactOnDjangoError(
+        "json_safe_and_pretty only accepts a JSON string, a mapping, or None."
+    )

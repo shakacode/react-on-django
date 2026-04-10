@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load react %}
+
+{% block title %}Options | React on Django Example{% endblock %}
+
+{% block content %}
+  <article class="demo-card">
+    {% react_component "HelloWorld" props=app_props_server_render_json prerender=False trace=True id="my-hello-world-id" html_options=hello_world_html_options %}
+    <hr>
+
+    <h2>Options example</h2>
+    <p>
+      This ports the props-as-JSON-string and <code>html_options</code> behavior
+      from the upstream dummy app into the currently supported client-rendering
+      path.
+    </p>
+    <ul>
+      <li>The props are passed as a pre-serialized JSON string.</li>
+      <li>The component gets a custom DOM id and CSS class.</li>
+      <li>Nested <code>data</code> attributes are flattened onto the container.</li>
+    </ul>
+
+    <pre>{% templatetag openblock %} react_component "HelloWorld" props=app_props_server_render_json prerender=False trace=True id="my-hello-world-id" html_options=hello_world_html_options {% templatetag closeblock %}</pre>
+  </article>
+{% endblock %}

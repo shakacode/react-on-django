@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load react %}
+
+{% block title %}
+  {{ metadata_component.title|striptags }}
+{% endblock %}
+
+{% block content %}
+  <article class="demo-card">
+    {{ metadata_component.componentHtml|safe }}
+    <hr>
+
+    <h2>Structured server-rendered metadata</h2>
+    <p>
+      This page demonstrates <code>react_component_hash</code> returning both
+      rendered component markup and extra head markup from the same server-side
+      render function.
+    </p>
+
+    <h3>Template</h3>
+    <pre># views.py
+metadata_component = render_react_component_hash(
+    "MetadataMessage",
+    props=app_props_server_render,
+    request=request,
+    prerender=True,
+    trace=True,
+    id="MetadataMessage-react-component-0",
+)
+
+# metadata_example.html
+{{ metadata_component.title|striptags }}
+[component markup emitted into the body above]</pre>
+  </article>
+{% endblock %}

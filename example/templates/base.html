@@ -1,0 +1,38 @@
+{% load react %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}React on Django Example{% endblock %}</title>
+  <link rel="icon" href="data:,">
+  {% react_component_assets %}
+</head>
+<body>
+  <main class="shell">
+    <header class="shell__header">
+      <p class="shell__eyebrow">react_on_django dummy example</p>
+      <h1 class="shell__title">Reference example app</h1>
+      <p class="shell__subtitle">
+        This example ports the supported HelloWorld flow from the upstream dummy
+        app and wires it through <code>django-rspack</code>, the shared browser
+        runtime package, and the Python renderer adapters.
+      </p>
+      <nav class="shell__nav">
+        <a href="/">Index</a>
+        <a href="/client_side_hello_world/">Client-side HelloWorld</a>
+        <a href="/client_side_hello_world_shared_store/">Shared store</a>
+        <a href="/server_side_hello_world_shared_store/">SSR shared store</a>
+        <a href="/server_side_hello_world/">Server-side HelloWorld</a>
+        <a href="/server_render_js_example/">server_render_js</a>
+        <a href="/metadata_example/">Metadata example</a>
+        <a href="/streaming_hello_world/">Streaming HelloWorld</a>
+        <a href="/rsc_hello_world/">RSC HelloWorld</a>
+        <a href="/client_side_hello_world_with_options/">Options example</a>
+      </nav>
+    </header>
+    {% block content %}{% endblock %}
+  </main>
+  {% react_redux_store_hydration_data %}
+</body>
+</html>

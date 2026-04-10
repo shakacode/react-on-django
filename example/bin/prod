@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+PYTHON_BIN="${PYTHON:-python3}"
+HOST="127.0.0.1"
+PORT="8011"
+RENDERER_MODE="node"
+RENDERER_PORT="3510"
+SKIP_COLLECTSTATIC="0"
+RENDERER_PASSWORD="react-on-django-example"
+
+usage() {
+  cat <<'EOF'
+Usage: example/bin/prod [options]
+
+Options:
+  --renderer=none|fake|node   Renderer mode (default: node)
+  --host=HOST            Bind host (default: 127.0.0.1)
+  --port=PORT            Bind port (default: 8011)
+  --renderer-port=PORT   Renderer bind port (default: 3510)
+  --skip-collectstatic   Skip collectstatic before boot
+  --help                 Show this message
+EOF
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    --renderer=*) RENDERER_MODE="${arg#*=}" ;;
+    --host=*) HOST="${arg#*=}" ;;
+    --port=*) PORT="${arg#*=}" ;;
+    --renderer-port=*) RENDERER_PORT="${arg#*=}" ;;
+    --skip-collectstatic) SKIP_COLLECTSTATIC="1" ;;
+    --help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $arg" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+RENDERER_URL_DEFAULT="http://127.0.0.1:${RENDERER_PORT}"
+
+(
+  cd "$ROOT_DIR"
+  npm run build:prod
+)
+
+if [[ "$SKIP_COLLECTSTATIC" != "1" ]]; then
+  (
+    cd "$ROOT_DIR"
+    REACT_ON_DJANGO_DEBUG=0 "$PYTHON_BIN" manage.py collectstatic --noinput >/dev/null
+  )
+fi
+
+PIDS=()
+
+cleanup() {
+  local status=$?
+  for pid in "${PIDS[@]:-}"; do
+    kill "$pid" 2>/dev/null || true
+  done
+  wait || true
+  exit "$status"
+}
+
+trap cleanup EXIT INT TERM
+
+if [[ "$RENDERER_MODE" == "fake" ]]; then
+  (
+    cd "$ROOT_DIR"
+    "$PYTHON_BIN" scripts/fake_renderer.py --host 127.0.0.1 --port "$RENDERER_PORT" --require-upload
+  ) &
+  PIDS+=("$!")
+  export REACT_ON_DJANGO_RENDERING_SERVER_URL="$RENDERER_URL_DEFAULT"
+  export REACT_ON_DJANGO_RENDERING_SERVER_PASSWORD="$RENDERER_PASSWORD"
+fi
+
+if [[ "$RENDERER_MODE" == "node" ]]; then
+  (
+    cd "$ROOT_DIR"
+    NODE_ENV=production \
+      RENDERER_PORT="$RENDERER_PORT" \
+      RENDERER_PASSWORD="$RENDERER_PASSWORD" \
+      REACT_ON_DJANGO_RENDERER_PASSWORD="$RENDERER_PASSWORD" \
+      REACT_ON_DJANGO_RENDERING_SERVER_PASSWORD="$RENDERER_PASSWORD" \
+      node client/node-renderer.js
+  ) &
+  PIDS+=("$!")
+  export REACT_ON_DJANGO_RENDERING_SERVER_URL="$RENDERER_URL_DEFAULT"
+  export REACT_ON_DJANGO_RENDERING_SERVER_PASSWORD="$RENDERER_PASSWORD"
+fi
+
+(
+  cd "$ROOT_DIR"
+  REACT_ON_DJANGO_DEBUG=0 \
+    REACT_ON_DJANGO_USE_RSPACK_PROXY=false \
+    RSPACK_ENV=production \
+    "$PYTHON_BIN" -m uvicorn react_on_django_example.asgi:application --host "$HOST" --port "$PORT"
+) &
+PIDS+=("$!")
+
+wait -n "${PIDS[@]}"

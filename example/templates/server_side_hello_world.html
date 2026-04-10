@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load react %}
+
+{% block title %}Server-side HelloWorld | React on Django Example{% endblock %}
+
+{% block content %}
+  <article class="demo-card">
+    {% react_component "HelloWorld" props=app_props_server_render prerender=True trace=True id="HelloWorld-react-component-ssr" %}
+    <hr>
+
+    <h2>React on Django server-side rendering</h2>
+    <p>
+      This page renders the component HTML on the server, then emits the same
+      JSON script contract used for client hydration.
+    </p>
+    <p>
+      Start the rendering server before loading this page. The bundled browser
+      runtime will hydrate the prerendered markup after load.
+    </p>
+
+    <h3>Template</h3>
+    <pre>{% templatetag openblock %} react_component "HelloWorld" props=app_props_server_render prerender=True trace=True id="HelloWorld-react-component-ssr" {% templatetag closeblock %}</pre>
+  </article>
+{% endblock %}

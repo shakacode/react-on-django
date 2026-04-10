@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load react %}
+
+{% block title %}Index | React on Django Example{% endblock %}
+
+{% block content %}
+  <section class="demo-grid">
+    <article class="demo-card">
+      <h2>Simple client rendered component</h2>
+      <p>
+        This mirrors the upstream HelloWorld slice and keeps the DOM contract
+        expected by the shared JavaScript runtime.
+      </p>
+      <pre>{% templatetag openblock %} react_component "HelloWorld" props=app_props_hello id="HelloWorld-react-component-0" trace=True {% templatetag closeblock %}</pre>
+      {% react_component "HelloWorld" props=app_props_hello id="HelloWorld-react-component-0" trace=True %}
+    </article>
+
+    <article class="demo-card">
+      <h2>Same component, different props</h2>
+      <p>
+        The upstream dummy app renders the same component multiple times on one
+        page. This port does the same, with explicit IDs so the current Python
+        helper stays deterministic.
+      </p>
+      <pre>{% templatetag openblock %} react_component "HelloWorld" props=app_props_hello_again id="HelloWorld-react-component-1" trace=True {% templatetag closeblock %}</pre>
+      {% react_component "HelloWorld" props=app_props_hello_again id="HelloWorld-react-component-1" trace=True %}
+    </article>
+
+    <article class="demo-card">
+      <h2>Server rendered component</h2>
+      <p>
+        This page uses the Python SSR transport against the shared server bundle.
+        It requires the rendering server to be running.
+      </p>
+      <p><a href="/server_side_hello_world/">Open the server-rendered example</a></p>
+    </article>
+
+    <article class="demo-card">
+      <h2>Deferred shared store</h2>
+      <p>
+        This page uses the Python store helpers and waits for a deferred store
+        hydration tag before rendering the dependent component.
+      </p>
+      <p><a href="/client_side_hello_world_shared_store/">Open the shared-store example</a></p>
+    </article>
+
+    <article class="demo-card">
+      <h2>Server-rendered shared store</h2>
+      <p>
+        This route registers a shared store before template rendering and then
+        prerenders two components against the same hydrated data.
+      </p>
+      <p><a href="/server_side_hello_world_shared_store/">Open the SSR shared-store example</a></p>
+    </article>
+
+    <article class="demo-card">
+      <h2>Streaming response</h2>
+      <p>
+        This page streams the component response into a full HTML document using
+        Django's streaming response support.
+      </p>
+      <p><a href="/streaming_hello_world/">Open the streaming example</a></p>
+    </article>
+
+    <article class="demo-card">
+      <h2>RSC-flavored streaming response</h2>
+      <p>
+        This route uses the same streaming shell pattern, but sends the render
+        request in RSC mode so nested server-component payloads can be generated
+        from the shared runtime.
+      </p>
+      <p><a href="/rsc_hello_world/">Open the RSC example</a></p>
+    </article>
+
+    <article class="demo-card">
+      <h2>server_render_js example</h2>
+      <p>
+        This route executes a non-React JavaScript function on the server and
+        replays its console output back to the browser console.
+      </p>
+      <p><a href="/server_render_js_example/">Open the server_render_js example</a></p>
+    </article>
+
+    <article class="demo-card">
+      <h2>Metadata via react_component_hash</h2>
+      <p>
+        This route uses the structured render hash flow to set document head
+        markup and return component HTML in one server-rendered object.
+      </p>
+      <p><a href="/metadata_example/">Open the metadata example</a></p>
+    </article>
+
+    <article class="demo-card">
+      <h2>Options example</h2>
+      <p>
+        The upstream dummy app has an options example. This port exercises the
+        same props-as-JSON-string and HTML options shape on the client-rendering
+        path that is implemented today.
+      </p>
+      <p><a href="/client_side_hello_world_with_options/">Open the options example</a></p>
+    </article>
+  </section>
+{% endblock %}

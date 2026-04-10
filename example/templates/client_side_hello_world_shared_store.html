@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load react %}
+
+{% block title %}Shared Store | React on Django Example{% endblock %}
+
+{% block content %}
+  <article class="demo-card">
+    {% react_redux_store "helloWorldStore" props=app_props_server_render defer=True %}
+    {% react_component "HelloWorldFromStore" props=store_component_props trace=True id="HelloWorldFromStore-react-component-0" %}
+    <hr>
+
+    <h2>Deferred shared-store hydration</h2>
+    <p>
+      This page uses the Django store helpers instead of passing all state
+      through the component props script.
+    </p>
+
+    <h3>Template</h3>
+    <pre>{% templatetag openblock %} react_redux_store "helloWorldStore" props=app_props_server_render defer=True {% templatetag closeblock %}
+{% templatetag openblock %} react_component "HelloWorldFromStore" props=store_component_props trace=True id="HelloWorldFromStore-react-component-0" {% templatetag closeblock %}
+{% templatetag openblock %} react_redux_store_hydration_data {% templatetag closeblock %}  {# emitted by the base layout #}</pre>
+  </article>
+{% endblock %}

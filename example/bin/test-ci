@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+STACK_PID=""
+
+pick_free_port() {
+  python3 - <<'PY'
+import socket
+
+with socket.socket() as sock:
+    sock.bind(("127.0.0.1", 0))
+    print(sock.getsockname()[1])
+PY
+}
+
+APP_PORT="${APP_PORT:-$(pick_free_port)}"
+RENDERER_PORT="${RENDERER_PORT:-$(pick_free_port)}"
+ASSET_PORT="${ASSET_PORT:-$(pick_free_port)}"
+BASE_URL="http://127.0.0.1:${APP_PORT}"
+
+cleanup() {
+  local status=$?
+  if [[ -n "$STACK_PID" ]]; then
+    kill "$STACK_PID" 2>/dev/null || true
+    wait "$STACK_PID" 2>/dev/null || true
+  fi
+  exit "$status"
+}
+
+trap cleanup EXIT INT TERM
+
+(
+  cd "$ROOT_DIR"
+  npm install
+) >/dev/null
+
+if [[ "${PLAYWRIGHT_SKIP_INSTALL:-0}" != "1" ]]; then
+  (
+    cd "$ROOT_DIR"
+    npx playwright install chromium >/dev/null
+  )
+fi
+
+(
+  cd "$ROOT_DIR"
+  ./bin/dev test --port="$APP_PORT" --renderer-port="$RENDERER_PORT" --asset-port="$ASSET_PORT"
+) &
+STACK_PID="$!"
+
+for _ in $(seq 1 120); do
+  if curl --silent --fail "$BASE_URL/" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 1
+done
+
+if ! curl --silent --fail "$BASE_URL/" >/dev/null 2>&1; then
+  echo "Timed out waiting for example stack at $BASE_URL" >&2
+  exit 1
+fi
+
+(
+  cd "$ROOT_DIR"
+  PLAYWRIGHT_BASE_URL="$BASE_URL" CI=1 npm run test:e2e
+)

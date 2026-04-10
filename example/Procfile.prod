@@ -1,0 +1,2 @@
+renderer: NODE_ENV=production RENDERER_PASSWORD=react-on-django-example REACT_ON_DJANGO_RENDERER_PASSWORD=react-on-django-example REACT_ON_DJANGO_RENDERING_SERVER_PASSWORD=react-on-django-example RENDERER_PORT=3801 node client/node-renderer.js
+web: REACT_ON_DJANGO_DEBUG=0 REACT_ON_DJANGO_USE_RSPACK_PROXY=false REACT_ON_DJANGO_RENDERING_SERVER_URL=http://127.0.0.1:3801 REACT_ON_DJANGO_RENDERING_SERVER_PASSWORD=react-on-django-example RSPACK_ENV=production python3 -m uvicorn react_on_django_example.asgi:application --host 127.0.0.1 --port 3001

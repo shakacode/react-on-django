@@ -1,0 +1,6 @@
+manifest: node scripts/write_example_manifest.mjs development --hmr
+client: HMR=true RSPACK_DEV_SERVER_PORT=3035 npm run dev:client
+server: npm run build:server:watch
+rsc: npm run build:rsc:watch
+renderer: RENDERER_PASSWORD=react-on-django-example REACT_ON_DJANGO_RENDERER_PASSWORD=react-on-django-example REACT_ON_DJANGO_RENDERING_SERVER_PASSWORD=react-on-django-example RENDERER_PORT=3800 node client/node-renderer.js
+web: REACT_ON_DJANGO_RENDERING_SERVER_URL=http://127.0.0.1:3800 REACT_ON_DJANGO_RENDERING_SERVER_PASSWORD=react-on-django-example REACT_ON_DJANGO_DEBUG=true REACT_ON_DJANGO_USE_RSPACK_PROXY=true HMR=true RSPACK_ENV=development RSPACK_DEV_SERVER_HOST=127.0.0.1 RSPACK_DEV_SERVER_PORT=3035 python3 manage.py runserver 127.0.0.1:3000

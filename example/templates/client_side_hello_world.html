@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load react %}
+
+{% block title %}Client-side HelloWorld | React on Django Example{% endblock %}
+
+{% block content %}
+  <article class="demo-card">
+    {% react_component "HelloWorld" props=app_props_server_render prerender=False trace=True id="HelloWorld-react-component-0" %}
+    <hr>
+
+    <h2>React on Django client-side rendering</h2>
+    <p>
+      This is the direct Django port of the client-only HelloWorld page in the
+      upstream dummy app. The page source renders a container plus the JSON
+      script tags that the shared browser runtime hydrates after load.
+    </p>
+
+    <h3>Template</h3>
+    <pre>{% templatetag openblock %} react_component "HelloWorld" props=app_props_server_render prerender=False trace=True id="HelloWorld-react-component-0" {% templatetag closeblock %}</pre>
+  </article>
+{% endblock %}

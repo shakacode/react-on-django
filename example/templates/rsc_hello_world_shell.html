@@ -1,0 +1,49 @@
+{% load react %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RSC HelloWorld | React on Django Example</title>
+  <link rel="icon" href="data:,">
+  {% react_component_assets %}
+</head>
+<body>
+  <main class="shell">
+    <header class="shell__header">
+      <p class="shell__eyebrow">react_on_django dummy example</p>
+      <h1 class="shell__title">RSC-enabled streaming example</h1>
+      <p class="shell__subtitle">
+        This route streams a client wrapper component that embeds an initial
+        React Server Components payload and then refetches it from Django when
+        the props change on the client.
+      </p>
+      <nav class="shell__nav">
+        <a href="/">Index</a>
+        <a href="/client_side_hello_world/">Client-side HelloWorld</a>
+        <a href="/server_side_hello_world/">Server-side HelloWorld</a>
+        <a href="/streaming_hello_world/">Streaming HelloWorld</a>
+        <a href="/rsc_hello_world/">RSC HelloWorld</a>
+        <a href="/client_side_hello_world_with_options/">Options example</a>
+      </nav>
+    </header>
+    <article class="demo-card">
+      <h2>RSC HelloWorld</h2>
+      <p>
+        The shell flushes immediately, then the component stream arrives with an
+        embedded RSC payload for the initial render.
+      </p>
+      <p>
+        The companion payload endpoint lives at
+        <code>/react_on_django/rsc/RscHelloWorld/</code>.
+      </p>
+      <!--STREAM_COMPONENT-->
+      <hr>
+      <p>
+        Click the refresh button after hydration to force a client-side payload
+        fetch and verify the RSC endpoint contract.
+      </p>
+    </article>
+  </main>
+</body>
+</html>

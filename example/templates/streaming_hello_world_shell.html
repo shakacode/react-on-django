@@ -1,0 +1,44 @@
+{% load react %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Streaming HelloWorld | React on Django Example</title>
+  <link rel="icon" href="data:,">
+  {% react_component_assets %}
+</head>
+<body>
+  <main class="shell">
+    <header class="shell__header">
+      <p class="shell__eyebrow">react_on_django dummy example</p>
+      <h1 class="shell__title">Streaming response example</h1>
+      <p class="shell__subtitle">
+        This route uses Django's streaming response support to flush component
+        markup progressively.
+      </p>
+      <nav class="shell__nav">
+        <a href="/">Index</a>
+        <a href="/client_side_hello_world/">Client-side HelloWorld</a>
+        <a href="/server_side_hello_world/">Server-side HelloWorld</a>
+        <a href="/streaming_hello_world/">Streaming HelloWorld</a>
+        <a href="/rsc_hello_world/">RSC HelloWorld</a>
+        <a href="/client_side_hello_world_with_options/">Options example</a>
+      </nav>
+    </header>
+    <article class="demo-card">
+      <h2>Streaming HelloWorld</h2>
+      <p>
+        The shell renders immediately, and the component payload is inserted at
+        the marker below as the response body streams.
+      </p>
+      <!--STREAM_COMPONENT-->
+      <hr>
+      <p>
+        This path is useful for verifying the ASGI-friendly transport and
+        streamed chunk handling in the Django integration layer.
+      </p>
+    </article>
+  </main>
+</body>
+</html>

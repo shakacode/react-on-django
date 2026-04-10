@@ -1,0 +1,275 @@
+#!/usr/bin/env python3
+
+from __future__ import annotations
+
+import argparse
+import os
+import signal
+import subprocess
+import time
+from pathlib import Path
+
+EXAMPLE_DIR = Path(__file__).resolve().parents[1]
+REPO_DIR = EXAMPLE_DIR.parent
+PYTHON = REPO_DIR / ".venv" / "bin" / "python3.14"
+RENDERER_PASSWORD = "react-on-django-example"
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Run the React on Django example stack in dev, static, prod, or test mode.",
+    )
+    parser.add_argument(
+        "mode",
+        nargs="?",
+        default="dev",
+        choices=["dev", "static", "prod", "test"],
+    )
+    parser.add_argument("--port", type=int, default=None)
+    parser.add_argument("--renderer-port", type=int, default=None)
+    parser.add_argument("--asset-port", type=int, default=None)
+    return parser.parse_args()
+
+
+def python_command(*args: str) -> list[str]:
+    return [str(PYTHON), *args]
+
+
+def runserver_command(port: int) -> list[str]:
+    return python_command(
+        "manage.py",
+        "runserver",
+        f"127.0.0.1:{port}",
+        "--noreload",
+    )
+
+
+def process_specs(
+    mode: str,
+    port: int,
+    renderer_port: int,
+    asset_port: int,
+) -> list[tuple[str, list[str], dict[str, str]]]:
+    base_env = {
+        **os.environ,
+        "RENDERER_PASSWORD": RENDERER_PASSWORD,
+        "REACT_ON_DJANGO_RENDERER_PASSWORD": RENDERER_PASSWORD,
+        "REACT_ON_DJANGO_RENDERING_SERVER_PASSWORD": RENDERER_PASSWORD,
+        "REACT_ON_DJANGO_RENDERING_SERVER_URL": f"http://127.0.0.1:{renderer_port}",
+        "RENDERER_PORT": str(renderer_port),
+    }
+
+    if mode == "dev":
+        manifest_env = {**base_env, "NODE_ENV": "development"}
+        return [
+            (
+                "manifest",
+                ["node", "scripts/write_example_manifest.mjs", "development", "--hmr"],
+                manifest_env,
+            ),
+            (
+                "client-dev-server",
+                ["npm", "run", "dev:client"],
+                {
+                    **base_env,
+                    "NODE_ENV": "development",
+                    "HMR": "true",
+                    "RSPACK_DEV_SERVER_PORT": str(asset_port),
+                },
+            ),
+            (
+                "server-watch",
+                ["npm", "run", "build:server:watch"],
+                {
+                    **base_env,
+                    "NODE_ENV": "test",
+                    "RSPACK_OUTPUT_DIR": "packs",
+                },
+            ),
+            (
+                "rsc-watch",
+                ["npm", "run", "build:rsc:watch"],
+                {
+                    **base_env,
+                    "NODE_ENV": "test",
+                    "RSPACK_OUTPUT_DIR": "packs",
+                },
+            ),
+            (
+                "renderer",
+                ["node", "client/node-renderer.js"],
+                {**base_env, "NODE_ENV": "development"},
+            ),
+            (
+                "django",
+                runserver_command(port),
+                {
+                    **base_env,
+                    "REACT_ON_DJANGO_DEBUG": "true",
+                    "RSPACK_ENV": "development",
+                    "RSPACK_DEV_SERVER_PORT": str(asset_port),
+                    "RSPACK_DEV_SERVER_HOST": "127.0.0.1",
+                    "REACT_ON_DJANGO_USE_RSPACK_PROXY": "true",
+                    "HMR": "true",
+                },
+            ),
+        ]
+
+    if mode == "static":
+        return [
+            (
+                "manifest",
+                ["node", "scripts/write_example_manifest.mjs", "development"],
+                {**base_env, "NODE_ENV": "development"},
+            ),
+            (
+                "client-watch",
+                ["npm", "run", "build:client:watch"],
+                {**base_env, "NODE_ENV": "development", "HMR": "false"},
+            ),
+            (
+                "server-watch",
+                ["npm", "run", "build:server:watch"],
+                {
+                    **base_env,
+                    "NODE_ENV": "test",
+                    "RSPACK_OUTPUT_DIR": "packs",
+                },
+            ),
+            (
+                "rsc-watch",
+                ["npm", "run", "build:rsc:watch"],
+                {
+                    **base_env,
+                    "NODE_ENV": "test",
+                    "RSPACK_OUTPUT_DIR": "packs",
+                },
+            ),
+            (
+                "renderer",
+                ["node", "client/node-renderer.js"],
+                {**base_env, "NODE_ENV": "development"},
+            ),
+            (
+                "django",
+                runserver_command(port),
+                {
+                    **base_env,
+                    "REACT_ON_DJANGO_DEBUG": "true",
+                    "RSPACK_ENV": "development",
+                    "REACT_ON_DJANGO_USE_RSPACK_PROXY": "false",
+                    "HMR": "false",
+                },
+            ),
+        ]
+
+    if mode == "prod":
+        return [
+            (
+                "build",
+                ["node", "scripts/build_example.mjs", "production"],
+                {**base_env, "NODE_ENV": "production"},
+            ),
+            (
+                "renderer",
+                ["node", "client/node-renderer.js"],
+                {**base_env, "NODE_ENV": "production"},
+            ),
+            (
+                "django",
+                runserver_command(port),
+                {
+                    **base_env,
+                    "REACT_ON_DJANGO_DEBUG": "false",
+                    "REACT_ON_DJANGO_USE_RSPACK_PROXY": "false",
+                    "RSPACK_ENV": "production",
+                },
+            ),
+        ]
+
+    return [
+        (
+            "build",
+            ["node", "scripts/build_example.mjs", "test"],
+            {**base_env, "NODE_ENV": "test"},
+        ),
+        (
+            "renderer",
+            ["node", "client/node-renderer.js"],
+            {**base_env, "NODE_ENV": "test"},
+        ),
+        (
+            "django",
+            runserver_command(port),
+            {
+                **base_env,
+                "REACT_ON_DJANGO_DEBUG": "false",
+                "REACT_ON_DJANGO_USE_RSPACK_PROXY": "false",
+                "RSPACK_ENV": "test",
+            },
+        ),
+    ]
+
+
+def run() -> int:
+    args = parse_args()
+    if not PYTHON.exists():
+        raise SystemExit(f"Expected Python at {PYTHON}")
+
+    defaults = {
+        "dev": (3000, 3800, 3035),
+        "static": (3000, 3800, 3035),
+        "prod": (3001, 3801, 3035),
+        "test": (3100, 3810, 3035),
+    }
+    default_port, default_renderer_port, default_asset_port = defaults[args.mode]
+    port = args.port or default_port
+    renderer_port = args.renderer_port or default_renderer_port
+    asset_port = args.asset_port or default_asset_port
+
+    children: list[subprocess.Popen[str]] = []
+
+    def stop_all(exit_code: int = 0) -> int:
+        for child in reversed(children):
+            if child.poll() is None:
+                child.terminate()
+        for child in reversed(children):
+            try:
+                child.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                child.kill()
+        return exit_code
+
+    def handle_signal(_signum: int, _frame: object | None) -> None:
+        raise SystemExit(stop_all())
+
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
+    one_shot_processes = {"build", "manifest"}
+
+    for name, command, env in process_specs(args.mode, port, renderer_port, asset_port):
+        print(f"[dev:{name}] {' '.join(command)}", flush=True)
+        child = subprocess.Popen(
+            command,
+            cwd=EXAMPLE_DIR,
+            env=env,
+            text=True,
+        )
+        children.append(child)
+        if name in one_shot_processes:
+            return_code = child.wait()
+            children.pop()
+            if return_code != 0:
+                return stop_all(return_code)
+
+    while True:
+        for child in children:
+            return_code = child.poll()
+            if return_code is not None:
+                return stop_all(return_code)
+        time.sleep(0.2)
+
+
+if __name__ == "__main__":
+    raise SystemExit(run())

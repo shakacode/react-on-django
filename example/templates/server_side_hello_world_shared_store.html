@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load react %}
+
+{% block title %}Server-side Shared Store | React on Django Example{% endblock %}
+
+{% block content %}
+  <article class="demo-card">
+    {% react_component "HelloWorldFromStore" props=store_component_props prerender=True store_dependencies="helloWorldStore" trace=True id="HelloWorldFromStore-react-component-ssr-0" %}
+    <hr>
+    <h2>Second shared-store mount</h2>
+    {% react_component "HelloWorldFromStore" props=store_component_props prerender=True store_dependencies="helloWorldStore" trace=True id="HelloWorldFromStore-react-component-ssr-1" %}
+    <hr>
+
+    <h2>Server-side shared-store registration</h2>
+    <p>
+      This page mirrors the upstream shared-store SSR pattern, but registers the
+      store in the Django view before template rendering and lets the base
+      layout flush deferred hydration data once.
+    </p>
+
+    <h3>Template</h3>
+    <pre>{% templatetag openblock %} react_component "HelloWorldFromStore" props=store_component_props prerender=True store_dependencies="helloWorldStore" trace=True id="HelloWorldFromStore-react-component-ssr-0" {% templatetag closeblock %}
+{% templatetag openblock %} react_component "HelloWorldFromStore" props=store_component_props prerender=True store_dependencies="helloWorldStore" trace=True id="HelloWorldFromStore-react-component-ssr-1" {% templatetag closeblock %}</pre>
+  </article>
+{% endblock %}
