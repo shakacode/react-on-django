@@ -38,5 +38,5 @@ The package already supports:
 - shared renderer console replay
 - streamed RSC payload endpoints under `react_on_django.urls`
 
-Broader controller-level template streaming and more of the upstream Pro
+Broader controller-level template streaming and more of the upstream helper
 surface are still being expanded.

@@ -46,5 +46,5 @@ The sample app includes:
 ## Current scope
 
 The payload endpoint and RSC-mode streaming shell are implemented. Additional
-upstream Pro helpers such as `rsc_payload_react_component`, cached helpers, and
+upstream helper APIs such as `rsc_payload_react_component`, cached helpers, and
 broader RSC example coverage are still being ported.

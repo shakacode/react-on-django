@@ -11,5 +11,4 @@ Current docs are organized into:
 - `introduction.md`
 - `getting-started/`
 - `guides/`
-- `pro/`
 - `sidebars.ts`

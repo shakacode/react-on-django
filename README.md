@@ -21,7 +21,7 @@ This initial scaffold covers:
 ## Example app
 
 The repository now includes a runnable Django example at `example/`. It ports
-the supported client-rendering slice of `react_on_rails_pro/spec/dummy` and
+the supported integration scenarios from the upstream reference dummy app and
 now also exercises the live SSR, streaming, and RSC adapters.
 
 - the client-side HelloWorld page
@@ -117,3 +117,16 @@ from react_on_django.assets import (
     render_react_component_assets,
 )
 ```
+
+## Licensing
+
+React on Django is a single source-available product. The same package and docs
+surface cover client rendering, SSR, streaming SSR, and React Server
+Components.
+
+- non-commercial and no-revenue use is free
+- commercial production use requires a paid license from ShakaCode
+
+See [LICENSE](/Users/justin/codex/react-on-django/LICENSE) for the repository
+terms and [react-on-django.com/licensing](https://react-on-django.com/licensing)
+for the public licensing page.

@@ -23,14 +23,7 @@ const sidebars: SidebarsConfig = {
         "guides/rsc",
         "guides/configuration",
         "guides/testing-and-operations",
-      ],
-    },
-    {
-      type: "category",
-      label: "Pro",
-      items: [
-        "pro/overview",
-        "pro/upgrading-to-pro",
+        "guides/licensing",
       ],
     },
   ],
