@@ -28,6 +28,10 @@ RuntimeBridge.register({ HelloWorld });
 </html>
 ```
 
+`react_component_assets` resolves your browser entrypoints through
+`django-rspack`, so the page expects a current manifest from your frontend
+build.
+
 ## 3. Render a component from a template
 
 ```django

@@ -20,6 +20,9 @@ The primary template API is:
 {% react_component "HelloWorld" props=hello_props %}
 ```
 
+Most applications can start with client rendering and enable SSR, streaming
+SSR, or RSC incrementally once the renderer-backed pieces are in place.
+
 When you need prerendering:
 
 ```django
