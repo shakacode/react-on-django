@@ -6,13 +6,32 @@ import argparse
 import os
 import signal
 import subprocess
+import sys
 import time
 from pathlib import Path
 
 EXAMPLE_DIR = Path(__file__).resolve().parents[1]
 REPO_DIR = EXAMPLE_DIR.parent
-PYTHON = REPO_DIR / ".venv" / "bin" / "python3.14"
 RENDERER_PASSWORD = "react-on-django-example"
+
+
+def resolve_python() -> str:
+    for env_var in ("PYTHON_BIN", "PYTHON"):
+        configured = os.environ.get(env_var)
+        if configured:
+            return configured
+
+    repo_python = REPO_DIR / ".venv" / "bin" / "python3.14"
+    if repo_python.exists():
+        return str(repo_python)
+
+    if sys.executable:
+        return sys.executable
+
+    return "python3"
+
+
+PYTHON = resolve_python()
 
 
 def parse_args() -> argparse.Namespace:
@@ -213,7 +232,7 @@ def process_specs(
 
 def run() -> int:
     args = parse_args()
-    if not PYTHON.exists():
+    if os.sep in PYTHON and not Path(PYTHON).exists():
         raise SystemExit(f"Expected Python at {PYTHON}")
 
     defaults = {

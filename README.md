@@ -127,6 +127,6 @@ Components.
 - non-commercial and no-revenue use is free
 - commercial production use requires a paid license from ShakaCode
 
-See [LICENSE](/Users/justin/codex/react-on-django/LICENSE) for the repository
+See [LICENSE](LICENSE) for the repository
 terms and [react-on-django.com/licensing](https://react-on-django.com/licensing)
 for the public licensing page.

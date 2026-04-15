@@ -4,6 +4,16 @@ on:
   push:
     branches: [main]
     paths: ["docs/**"]
+  workflow_dispatch:
+    inputs:
+      repo_url:
+        description: "Repository URL for the canonical docs source"
+        required: false
+        type: string
+      ref:
+        description: "Branch or tag to sync in the docs site repo"
+        required: false
+        type: string
 
 jobs:
   notify-docs-site:
@@ -23,4 +33,4 @@ jobs:
           repository: shakacode/react-on-django.com
           event-type: docs-updated
           client-payload: >-
-            {"repo_url":"https://github.com/shakacode/react-on-django.git","ref":"main"}
+            {"repo_url":"${{ github.event.inputs.repo_url || format('https://github.com/{0}.git', github.repository) }}","ref":"${{ github.event.inputs.ref || github.ref_name }}"}

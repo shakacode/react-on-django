@@ -35,7 +35,7 @@ jobs:
 
   example-e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -64,8 +64,38 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Make example scripts executable
-        run: chmod +x example/bin/dev example/bin/prod example/bin/test-ci
+        run: chmod +x example/bin/dev example/bin/prod example/bin/test-ci example/scripts/smoke_stack.py
 
       - name: Run example smoke and Playwright suite
         working-directory: example
         run: ./bin/test-ci
+
+      - name: Smoke example dev mode
+        working-directory: example
+        run: >
+          python3 scripts/smoke_stack.py
+          --base-url http://127.0.0.1:3110
+          --path /
+          --path /server_side_hello_world/
+          --
+          ./bin/dev dev --port=3110 --renderer-port=3910 --asset-port=3045
+
+      - name: Smoke example static mode
+        working-directory: example
+        run: >
+          python3 scripts/smoke_stack.py
+          --base-url http://127.0.0.1:3111
+          --path /
+          --path /server_side_hello_world/
+          --
+          ./bin/dev static --port=3111 --renderer-port=3911 --asset-port=3046
+
+      - name: Smoke example production mode
+        working-directory: example
+        run: >
+          python3 scripts/smoke_stack.py
+          --base-url http://127.0.0.1:3112
+          --path /
+          --path /server_side_hello_world/
+          --
+          ./bin/prod --renderer=fake --port=3112 --renderer-port=3912

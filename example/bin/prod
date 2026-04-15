@@ -2,7 +2,16 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-PYTHON_BIN="${PYTHON:-python3}"
+REPO_PYTHON="$ROOT_DIR/../.venv/bin/python3.14"
+if [[ -n "${PYTHON_BIN:-}" ]]; then
+  PYTHON_BIN="$PYTHON_BIN"
+elif [[ -n "${PYTHON:-}" ]]; then
+  PYTHON_BIN="$PYTHON"
+elif [[ -x "$REPO_PYTHON" ]]; then
+  PYTHON_BIN="$REPO_PYTHON"
+else
+  PYTHON_BIN="python3"
+fi
 HOST="127.0.0.1"
 PORT="8011"
 RENDERER_MODE="node"
@@ -19,6 +28,7 @@ Options:
   --host=HOST            Bind host (default: 127.0.0.1)
   --port=PORT            Bind port (default: 8011)
   --renderer-port=PORT   Renderer bind port (default: 3510)
+  PYTHON or PYTHON_BIN   Python interpreter override
   --skip-collectstatic   Skip collectstatic before boot
   --help                 Show this message
 EOF
