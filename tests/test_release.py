@@ -136,6 +136,45 @@ def test_update_version_file_rewrites_about_module(tmp_path, monkeypatch):
     assert version_file.read_text() == '__version__ = "0.1.0a1"\n'
 
 
+def test_prepared_version_restores_after_pre_commit_failure(tmp_path, monkeypatch):
+    release = load_release_module()
+    version_file = tmp_path / "__about__.py"
+    version_file.write_text('__version__ = "0.1.0"\n')
+    monkeypatch.setattr(release, "VERSION_FILE", version_file)
+
+    with pytest.raises(RuntimeError, match="pre-commit failure"):
+        with release.prepared_version(
+            release.parse_version("0.1.0a1"), restore_after_success=False
+        ):
+            raise RuntimeError("pre-commit failure")
+
+    assert version_file.read_text() == '__version__ = "0.1.0"\n'
+
+
+def test_prepared_version_keeps_target_version_after_success(tmp_path, monkeypatch):
+    release = load_release_module()
+    version_file = tmp_path / "__about__.py"
+    version_file.write_text('__version__ = "0.1.0"\n')
+    monkeypatch.setattr(release, "VERSION_FILE", version_file)
+
+    with release.prepared_version(release.parse_version("0.1.0a1"), restore_after_success=False):
+        pass
+
+    assert version_file.read_text() == '__version__ = "0.1.0a1"\n'
+
+
+def test_prepared_version_restores_successful_dry_run(tmp_path, monkeypatch):
+    release = load_release_module()
+    version_file = tmp_path / "__about__.py"
+    version_file.write_text('__version__ = "0.1.0"\n')
+    monkeypatch.setattr(release, "VERSION_FILE", version_file)
+
+    with release.prepared_version(release.parse_version("0.1.0a1"), restore_after_success=True):
+        pass
+
+    assert version_file.read_text() == '__version__ = "0.1.0"\n'
+
+
 def test_version_sort_key_orders_prereleases_before_stable():
     release = load_release_module()
     alpha = release.version_sort_key(release.parse_version("0.1.0a1"))

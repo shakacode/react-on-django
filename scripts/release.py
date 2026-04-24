@@ -514,12 +514,12 @@ def main(argv: list[str] | None = None) -> int:
                     print("\nDry run completed. No commit, tag, or push was created.", flush=True)
                     return 0
 
-                stage_and_commit_release_files(context.target_version)
-                create_tag(context.target_version)
-                if upload_plan.repository is not None:
-                    upload_distributions(upload_plan.repository)
-                if not args.skip_push:
-                    push_release(context.branch)
+            stage_and_commit_release_files(context.target_version)
+            create_tag(context.target_version)
+            if upload_plan.repository is not None:
+                upload_distributions(upload_plan.repository)
+            if not args.skip_push:
+                push_release(context.branch)
         finally:
             clean_build_artifacts()
 
