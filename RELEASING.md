@@ -35,6 +35,11 @@ interpreter you want:
 make release PYTHON=.venv/bin/python3.14
 ```
 
+`react-on-django` depends on `django-rspack`, so publish the matching
+`django-rspack` release to the same package index before publishing
+`react-on-django`. PyPI accepts the upload even if dependencies are missing,
+but user installs will fail until `django-rspack>=0.1.0` is available.
+
 ## Changelog format
 
 Add a versioned heading for the release you want to cut. The release command

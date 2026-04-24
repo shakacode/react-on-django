@@ -40,6 +40,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
+          # django-rspack is a sibling package and is not published yet.
+          python -m pip install "django-rspack @ git+https://github.com/shakacode/django-rspack.git@7b09b8baf8d23c822978fcb472672a811927f5e5"
           python -m pip install "Django==${{ matrix.django-version }}" -e .[dev]
 
       - name: Ruff
@@ -70,6 +72,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
+          # django-rspack is a sibling package and is not published yet.
+          python -m pip install "django-rspack @ git+https://github.com/shakacode/django-rspack.git@7b09b8baf8d23c822978fcb472672a811927f5e5"
           python -m pip install -e .[dev]
 
       - name: Install example dependencies
@@ -108,18 +112,17 @@ jobs:
         name: Read package version
         shell: bash
         run: |
-          version="$(
-            python - <<'PY'
-            from pathlib import Path
-            import re
+          python - <<'PY' > "$RUNNER_TEMP/package-version"
+          from pathlib import Path
+          import re
 
-            text = Path("src/react_on_django/__about__.py").read_text()
-            match = re.search(r'^__version__ = "([^"]+)"$', text, re.M)
-            if not match:
-                raise SystemExit("Could not find __version__ in src/react_on_django/__about__.py")
-            print(match.group(1))
-            PY
-          )"
+          text = Path("src/react_on_django/__about__.py").read_text()
+          match = re.search(r'^__version__ = "([^"]+)"$', text, re.M)
+          if not match:
+              raise SystemExit("Could not find __version__ in src/react_on_django/__about__.py")
+          print(match.group(1))
+          PY
+          version="$(cat "$RUNNER_TEMP/package-version")"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Validate release version
