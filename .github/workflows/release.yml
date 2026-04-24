@@ -42,7 +42,7 @@ jobs:
           python -m pip install --upgrade pip
           # django-rspack is a sibling package and is not published yet.
           python -m pip install "django-rspack @ git+https://github.com/shakacode/django-rspack.git@7b09b8baf8d23c822978fcb472672a811927f5e5"
-          python -m pip install "Django==${{ matrix.django-version }}" -e .[dev]
+          python -m pip install "Django==${{ matrix.django-version }}" -e '.[dev]'
 
       - name: Ruff
         run: ruff check .
@@ -74,7 +74,7 @@ jobs:
           python -m pip install --upgrade pip
           # django-rspack is a sibling package and is not published yet.
           python -m pip install "django-rspack @ git+https://github.com/shakacode/django-rspack.git@7b09b8baf8d23c822978fcb472672a811927f5e5"
-          python -m pip install -e .[dev]
+          python -m pip install -e '.[dev]'
 
       - name: Install example dependencies
         working-directory: example
@@ -116,7 +116,7 @@ jobs:
           from pathlib import Path
           import re
 
-          text = Path("src/react_on_django/__about__.py").read_text()
+          text = Path("src/react_on_django/__about__.py").read_text(encoding="utf-8")
           match = re.search(r'^__version__ = "([^"]+)"$', text, re.M)
           if not match:
               raise SystemExit("Could not find __version__ in src/react_on_django/__about__.py")
@@ -131,14 +131,7 @@ jobs:
           PACKAGE_VERSION: ${{ steps.version.outputs.version }}
           INPUT_VERSION: ${{ inputs.version }}
         run: |
-          expected_tag="v${PACKAGE_VERSION}"
-
-          if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF_NAME}" != "${expected_tag}" ]]; then
-            echo "Tag ${GITHUB_REF_NAME} does not match package version ${PACKAGE_VERSION}."
-            exit 1
-          fi
-
-          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && -n "${INPUT_VERSION}" && "${INPUT_VERSION}" != "${PACKAGE_VERSION}" ]]; then
+          if [[ -n "${INPUT_VERSION}" && "${INPUT_VERSION}" != "${PACKAGE_VERSION}" ]]; then
             echo "Requested version ${INPUT_VERSION} does not match package version ${PACKAGE_VERSION}."
             exit 1
           fi

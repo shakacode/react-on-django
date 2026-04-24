@@ -27,7 +27,7 @@ jobs:
           python -m pip install --upgrade pip
           # django-rspack is a sibling package and is not published yet.
           python -m pip install "django-rspack @ git+https://github.com/shakacode/django-rspack.git@7b09b8baf8d23c822978fcb472672a811927f5e5"
-          python -m pip install "Django==${{ matrix.django-version }}" -e .[dev]
+          python -m pip install "Django==${{ matrix.django-version }}" -e '.[dev]'
 
       - name: Ruff
         run: ruff check .
@@ -57,7 +57,7 @@ jobs:
           python -m pip install --upgrade pip
           # django-rspack is a sibling package and is not published yet.
           python -m pip install "django-rspack @ git+https://github.com/shakacode/django-rspack.git@7b09b8baf8d23c822978fcb472672a811927f5e5"
-          python -m pip install -e .[dev]
+          python -m pip install -e '.[dev]'
 
       - name: Install example dependencies
         working-directory: example

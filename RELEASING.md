@@ -4,15 +4,15 @@ The maintainer flow is:
 
 1. Update `CHANGELOG.md` for the version you want to ship.
 2. Run `make release`.
-3. Confirm the version, branch, checks, upload target, and push step.
-4. If you chose `pypi` or `testpypi`, `twine` uploads locally.
-5. Otherwise, push the tag and use the GitHub workflow manually if you still
-   want CI-based publishing.
+3. Confirm the version, branch, checks, push step, and upload target.
+4. The command pushes the branch plus tag before any local `twine` upload.
+5. If you did not choose a local upload, use the GitHub workflow manually after
+   the tag is pushed if you still want CI-based publishing.
 
 `make release` is the Python equivalent of `rake release`. It validates the
 repo state, bumps `src/react_on_django/__about__.py` if needed, runs the
-release checks, creates the release commit, tags it, optionally uploads with
-`twine`, and then pushes the branch plus tag to GitHub.
+release checks, creates the release commit, tags it, pushes the branch plus tag
+to GitHub, and optionally uploads with `twine`.
 
 ## Before you run it
 
@@ -89,6 +89,13 @@ Dry run without commit, tag, or push:
 make release-dry-run VERSION=0.1.0a1
 ```
 
+Boolean Makefile flags are enabled by truthy values like `1`, `true`, `yes`,
+`y`, or `on`. For example:
+
+```bash
+make release-dry-run VERSION=0.1.0a1 YES=1 SKIP_CHECKS=true
+```
+
 The release command runs:
 
 - `ruff check .`
@@ -142,8 +149,12 @@ python -m pip install react-on-django==0.1.0a1
 4. Runs the release checks and local package build.
 5. Commits `CHANGELOG.md` and `src/react_on_django/__about__.py` if needed.
 6. Creates `vX.Y.Z` or `vX.Y.ZaN`.
-7. Optionally uploads `dist/*` with `twine upload --repository pypi|testpypi`.
-8. Pushes the current branch plus tags to `origin`.
+7. Pushes the current branch plus tags to `origin`.
+8. Optionally uploads `dist/*` with `twine upload --repository pypi|testpypi`.
+
+The command refuses `SKIP_PUSH=1 REPOSITORY=pypi` or
+`SKIP_PUSH=1 REPOSITORY=testpypi` because a package upload should not exist
+without the matching commit and tag on GitHub.
 
 ## Local upload setup
 

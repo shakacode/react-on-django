@@ -95,7 +95,7 @@ def version_sort_key(version: ParsedVersion) -> tuple[int, int, int, int, int]:
 
 
 def read_current_version() -> ParsedVersion:
-    text = VERSION_FILE.read_text()
+    text = VERSION_FILE.read_text(encoding="utf-8")
     match = re.search(r'^__version__ = "([^"]+)"$', text, re.M)
     if not match:
         raise ReleaseError(f"Could not find __version__ in {VERSION_FILE}")
@@ -103,7 +103,7 @@ def read_current_version() -> ParsedVersion:
 
 
 def update_version_file(target_version: ParsedVersion) -> None:
-    text = VERSION_FILE.read_text()
+    text = VERSION_FILE.read_text(encoding="utf-8")
     updated = re.sub(
         r'^__version__ = "([^"]+)"$',
         f'__version__ = "{target_version}"',
@@ -113,36 +113,34 @@ def update_version_file(target_version: ParsedVersion) -> None:
     )
     if updated == text:
         raise ReleaseError(f"Could not update version in {VERSION_FILE}")
-    VERSION_FILE.write_text(updated)
+    VERSION_FILE.write_text(updated, encoding="utf-8")
 
 
 @contextmanager
 def prepared_version(
     target_version: ParsedVersion, *, restore_after_success: bool
 ) -> Iterator[None]:
-    original = VERSION_FILE.read_text()
+    original = VERSION_FILE.read_text(encoding="utf-8")
     current_version = read_current_version()
     should_update = current_version != target_version
 
     if should_update:
         update_version_file(target_version)
 
+    success = False
     try:
         yield
-    except Exception:
-        if should_update:
-            VERSION_FILE.write_text(original)
-        raise
-    else:
-        if should_update and restore_after_success:
-            VERSION_FILE.write_text(original)
+        success = True
+    finally:
+        if should_update and (restore_after_success or not success):
+            VERSION_FILE.write_text(original, encoding="utf-8")
 
 
 def latest_changelog_version() -> ParsedVersion | None:
     if not CHANGELOG_FILE.exists():
         return None
 
-    for line in CHANGELOG_FILE.read_text().splitlines():
+    for line in CHANGELOG_FILE.read_text(encoding="utf-8").splitlines():
         match = CHANGELOG_HEADER_RE.match(line.strip())
         if not match:
             continue
@@ -159,7 +157,7 @@ def extract_changelog_section(version: ParsedVersion) -> str | None:
     if not CHANGELOG_FILE.exists():
         return None
 
-    lines = CHANGELOG_FILE.read_text().splitlines()
+    lines = CHANGELOG_FILE.read_text(encoding="utf-8").splitlines()
     collecting = False
     section_lines: list[str] = []
 
@@ -389,12 +387,25 @@ def resolve_upload_plan(
 ) -> UploadPlan:
     selected = parse_repository_name(repository)
     if dry_run:
+        if selected is not None:
+            print(
+                f"Warning: ignoring --repository {selected} because --dry-run does not upload.",
+                flush=True,
+            )
         return UploadPlan(repository=None, source="dry-run")
     if selected is not None:
         return UploadPlan(repository=selected, source="explicit option")
     if yes:
         return UploadPlan(repository=None, source="non-interactive default")
     return prompt_upload_repository()
+
+
+def validate_upload_push_plan(*, skip_push: bool, upload_plan: UploadPlan) -> None:
+    if skip_push and upload_plan.repository is not None:
+        raise ReleaseError(
+            "Cannot upload distributions with --skip-push. Push the release branch and "
+            "tag before uploading to pypi or testpypi."
+        )
 
 
 def upload_distributions(repository: str) -> None:
@@ -488,6 +499,7 @@ def main(argv: list[str] | None = None) -> int:
             dry_run=args.dry_run,
             yes=args.yes,
         )
+        validate_upload_push_plan(skip_push=args.skip_push, upload_plan=upload_plan)
         print_release_summary(
             context,
             dry_run=args.dry_run,
@@ -516,10 +528,10 @@ def main(argv: list[str] | None = None) -> int:
 
             stage_and_commit_release_files(context.target_version)
             create_tag(context.target_version)
-            if upload_plan.repository is not None:
-                upload_distributions(upload_plan.repository)
             if not args.skip_push:
                 push_release(context.branch)
+            if upload_plan.repository is not None:
+                upload_distributions(upload_plan.repository)
         finally:
             clean_build_artifacts()
 
