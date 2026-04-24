@@ -19,11 +19,46 @@ from .utils.html_output import (
 def _django_rspack_asset_helpers():
     try:
         from django_rspack import get_asset_path, get_asset_url, get_bundle_urls
-    except ImportError as exc:
-        raise ReactOnDjangoError(
-            "django-rspack is required for asset integration. "
-            "Install django-rspack and add 'django_rspack' to INSTALLED_APPS."
-        ) from exc
+    except ImportError:
+        try:
+            from django_rspack.conf import get_config
+            from django_rspack.manifest import get_manifest
+        except ImportError as exc:
+            raise ReactOnDjangoError(
+                "django-rspack is required for asset integration. "
+                "Install django-rspack and add 'django_rspack' to INSTALLED_APPS."
+            ) from exc
+
+        def _build_asset_url(path: str) -> str:
+            asset_host = get_config().asset_host
+            if asset_host:
+                return f"{asset_host.rstrip('/')}{path}"
+            return path
+
+        def get_asset_path(name: str) -> str:
+            return get_manifest().lookup_strict(name)
+
+        def get_asset_url(name: str) -> str:
+            return _build_asset_url(get_asset_path(name))
+
+        def get_bundle_urls(name: str, *, pack_type: str = "js") -> tuple[str, ...]:
+            manifest = get_manifest()
+            chunks = manifest.lookup_pack_with_chunks(name, pack_type=pack_type)
+            if chunks:
+                paths = chunks
+            else:
+                paths = [manifest.lookup_strict(name, pack_type=pack_type)]
+
+            seen: set[str] = set()
+            urls: list[str] = []
+            for path in paths:
+                if path in seen:
+                    continue
+                seen.add(path)
+                urls.append(_build_asset_url(path))
+            return tuple(urls)
+
+        return get_asset_path, get_asset_url, get_bundle_urls
 
     return get_asset_path, get_asset_url, get_bundle_urls
 
