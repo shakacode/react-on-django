@@ -26,7 +26,7 @@ VERSION_RE = re.compile(
     r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)"
     r"(?:(?P<pre>a|b|rc)(?P<pre_n>\d+))?$"
 )
-CHANGELOG_HEADER_RE = re.compile(r"^##+\s+\[(?P<version>[^\]]+)\](?:\s+-\s+.+)?$")
+CHANGELOG_HEADER_RE = re.compile(r"^##\s+\[(?P<version>[^\]]+)\](?:\s+-\s+.+)?$")
 
 
 class ReleaseError(RuntimeError):
