@@ -1,7 +1,6 @@
 """Public package exports for React on Django."""
 
-__version__ = "0.1.0"
-
+from .__about__ import __version__
 from .assets import (  # noqa: E402
     get_react_bundle_urls,
     get_server_bundle_path,
@@ -27,6 +26,7 @@ from .views import rsc_payload_response, stream_react_component_response  # noqa
 __all__ = [
     "ComponentMarkup",
     "ReactOnDjangoError",
+    "__version__",
     "get_react_bundle_urls",
     "get_server_bundle_path",
     "get_server_bundle_url",

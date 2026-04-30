@@ -5,13 +5,40 @@ from __future__ import annotations
 import argparse
 import os
 import signal
+import shutil
 import subprocess
 import time
 from pathlib import Path
 
 EXAMPLE_DIR = Path(__file__).resolve().parents[1]
 REPO_DIR = EXAMPLE_DIR.parent
-PYTHON = REPO_DIR / ".venv" / "bin" / "python3.14"
+
+
+def resolve_python() -> str:
+    candidates = (
+        os.environ.get("REACT_ON_DJANGO_EXAMPLE_PYTHON"),
+        str(REPO_DIR / ".venv" / "bin" / "python3.14"),
+        str(REPO_DIR / ".venv" / "bin" / "python"),
+        "python3",
+    )
+    for candidate in candidates:
+        if not candidate:
+            continue
+        candidate_path = Path(candidate).expanduser()
+        if candidate_path.is_absolute() or "/" in candidate:
+            if candidate_path.exists():
+                return str(candidate_path)
+            continue
+        resolved = shutil.which(candidate)
+        if resolved:
+            return resolved
+    raise SystemExit(
+        "Could not find a Python interpreter. "
+        "Set REACT_ON_DJANGO_EXAMPLE_PYTHON or create .venv/bin/python3.14.",
+    )
+
+
+PYTHON = resolve_python()
 RENDERER_PASSWORD = "react-on-django-example"
 
 
@@ -213,8 +240,6 @@ def process_specs(
 
 def run() -> int:
     args = parse_args()
-    if not PYTHON.exists():
-        raise SystemExit(f"Expected Python at {PYTHON}")
 
     defaults = {
         "dev": (3000, 3800, 3035),
