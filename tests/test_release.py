@@ -72,6 +72,23 @@ def test_changelog_has_section_accepts_second_level_headers(tmp_path, monkeypatc
     assert release.changelog_has_section(release.parse_version("0.1.0a1")) is True
 
 
+def test_changelog_has_section_ignores_nested_version_like_headers(tmp_path, monkeypatch):
+    release = load_release_module()
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(
+        "# Changelog\n\n"
+        "## [0.1.0a1] - 2026-04-19\n"
+        "### [0.1.0] is not a release boundary\n"
+        "- This is still part of the alpha notes.\n"
+    )
+    monkeypatch.setattr(release, "CHANGELOG_FILE", changelog)
+
+    assert release.extract_changelog_section(release.parse_version("0.1.0a1")) == (
+        "### [0.1.0] is not a release boundary\n"
+        "- This is still part of the alpha notes."
+    )
+
+
 def test_changelog_has_section_rejects_empty_release_section(tmp_path, monkeypatch):
     release = load_release_module()
     changelog = tmp_path / "CHANGELOG.md"
