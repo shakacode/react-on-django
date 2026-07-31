@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "react-on-django"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Render React components from Django templates with SSR, streaming, and RSC support."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -32,16 +32,28 @@ dependencies = [
   "httpcore[http2]>=1.0,<2.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/shakacode/react-on-django"
+Repository = "https://github.com/shakacode/react-on-django"
+Issues = "https://github.com/shakacode/react-on-django/issues"
+Documentation = "https://github.com/shakacode/react-on-django/tree/main/docs"
+
 [project.optional-dependencies]
 dev = [
+  "build>=1.2,<2.0",
+  "hatchling>=1.27,<2.0",
   "pytest>=8.3,<9.0",
   "pytest-django>=4.9,<5.0",
   "ruff>=0.11,<0.12",
+  "twine>=6.1,<7.0",
   "uvicorn>=0.34,<1.0",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/react_on_django"]
+
+[tool.hatch.version]
+path = "src/react_on_django/__about__.py"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import sys
+import types
 
 from django.template import Context, Template
 from django_rspack.manifest import MissingEntryError
 
+import react_on_django.assets as assets
 from react_on_django.assets import (
     get_react_bundle_urls,
     get_server_bundle_path,
@@ -30,6 +33,53 @@ def test_get_react_bundle_urls_returns_chunk_order(settings, tmp_project, sample
         "/packs/runtime-abc123.js",
         "/packs/vendor-789xyz.js",
         "/packs/application-abc123.js",
+    )
+
+
+def test_asset_helpers_fall_back_to_django_rspack_manifest_api(monkeypatch):
+    fake_package = types.ModuleType("django_rspack")
+    fake_package.__path__ = []
+
+    fake_conf = types.ModuleType("django_rspack.conf")
+    fake_manifest_module = types.ModuleType("django_rspack.manifest")
+
+    class FakeConfig:
+        asset_host = "https://cdn.example.com"
+
+    class FakeManifest:
+        def lookup_strict(self, name, pack_type=None):
+            if pack_type:
+                return f"/packs/{name}.{pack_type}"
+            return f"/packs/{name}"
+
+        def lookup_pack_with_chunks(self, name, pack_type=None):
+            if name == "application" and pack_type == "js":
+                return [
+                    "/packs/runtime.js",
+                    "/packs/vendor.js",
+                    "/packs/vendor.js",
+                    "/packs/application.js",
+                ]
+            return None
+
+    fake_conf.get_config = FakeConfig
+    fake_manifest_module.get_manifest = FakeManifest
+
+    monkeypatch.setitem(sys.modules, "django_rspack", fake_package)
+    monkeypatch.setitem(sys.modules, "django_rspack.conf", fake_conf)
+    monkeypatch.setitem(sys.modules, "django_rspack.manifest", fake_manifest_module)
+
+    get_asset_path, get_asset_url, get_bundle_urls = assets._django_rspack_asset_helpers()
+
+    assert get_asset_path("server-bundle.js") == "/packs/server-bundle.js"
+    assert get_asset_url("server-bundle.js") == "https://cdn.example.com/packs/server-bundle.js"
+    assert get_bundle_urls("application", pack_type="js") == (
+        "https://cdn.example.com/packs/runtime.js",
+        "https://cdn.example.com/packs/vendor.js",
+        "https://cdn.example.com/packs/application.js",
+    )
+    assert get_bundle_urls("admin", pack_type="css") == (
+        "https://cdn.example.com/packs/admin.css",
     )
 
 
